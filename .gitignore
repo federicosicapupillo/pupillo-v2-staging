@@ -1,0 +1,36 @@
+# Dependency directories
+node_modules/
+**/node_modules/
+
+# Next.js build output
+.next/
+**/.next/
+*.tsbuildinfo
+**/*.tsbuildinfo
+
+# Environment variables and secrets
+.env
+.env.local
+.env.*.local
+*.env
+**/.env
+**/.env.local
+**/.env.*.local
+**/*.env
+
+# Operating System files
+.DS_Store
+**/.DS_Store
+Thumbs.db
+
+# Temporary directories
+.tmp/
+**/.tmp/
+
+# Python cache and virtual envs
+__pycache__/
+**/__pycache__/
+*.pyc
+.venv/
+env/
+venv/
