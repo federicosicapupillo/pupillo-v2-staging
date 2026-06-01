@@ -31,13 +31,13 @@ export default async function Page() {
     const { data: { user } } = await supabase.auth.getUser()
     if (user) {
       sessionUser = user
-      const { data: profile } = await supabase
-        .from('profiles')
+      const { data: userRoleRow } = await supabase
+        .from('user_roles')
         .select('role')
-        .eq('id', user.id)
+        .eq('user_id', user.id)
         .maybeSingle()
-      if (profile) {
-        userRole = profile.role
+      if (userRoleRow) {
+        userRole = userRoleRow.role
       }
     }
   } catch (e) {

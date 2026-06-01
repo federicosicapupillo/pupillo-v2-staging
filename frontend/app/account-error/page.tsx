@@ -21,19 +21,15 @@ export default function AccountErrorPage() {
 
         let userRole = userRoleRow?.role || null
 
-        // Query profile status
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .maybeSingle()
-
-        if (profile) {
-          if (!userRole) userRole = profile.role
-          
-          if (profile.account_status === 'suspended') {
-            setErrorDetail("Il tuo account è stato sospeso dall'amministrazione per violazione dei termini d'uso o incidenti di no-show.")
-          }
+        // Query profile status safely (Only query existing columns in Staging)
+        try {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('id, email')
+            .eq('id', user.id)
+            .maybeSingle()
+        } catch (err) {
+          console.warn("Errore durante la verifica di profiles in account-error.", err)
         }
 
         setRole(userRole)

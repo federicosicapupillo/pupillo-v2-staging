@@ -127,51 +127,14 @@ export default function OnboardingPage() {
     const supabase = createClient()
 
     try {
-      // 1. UPDATE PRIMARIO SU `profiles`
-      let profilePayload: any = {
-        profile_completed: true,
-        phone_verified: true, // Se arriva qui, assumiamo validato (almeno in demo)
-        phone: phone,
-      }
+      // 1. UPDATE PRIMARIO SU `profiles` (FILTRATO AI SOLI CAMPI ESISTENTI IN STAGING)
+      // profiles ha solo 'id', 'email', 'credits'. Nessuno dei campi di onboarding esiste in profiles in Staging.
+      // Saltiamo quindi l'aggiornamento di profiles e scriviamo direttamente sui profili verticali.
 
-      if (role === 'worker') {
-        profilePayload = {
-          ...profilePayload,
-          full_name: `${firstName} ${lastName}`.trim(),
-          first_name: firstName,
-          last_name: lastName,
-          primary_role: primaryRole || 'worker',
-          secondary_roles: secondaryRoles,
-          experience_years: parseInt(experience, 10) || 0,
-          hourly_rate: parseFloat(hourlyRate) || 0,
-          city: city,
-          neighborhood: neighborhood,
-          languages: languages,
-          weekly_availability: weeklyAvailability
-        }
-      } else {
-        profilePayload = {
-          ...profilePayload,
-          business_name: businessName,
-          company_name: companyName,
-          vat_number: vatNumber,
-          address: address,
-          city: city,
-          neighborhood: neighborhood,
-          bio: bio,
-          primary_role: 'restaurant'
-        }
-      }
-
-      try {
-        await supabase.from('profiles').update(profilePayload).eq('id', userId)
-      } catch (err) {
-        console.warn("Aggiornamento profiles fallito (Sandbox Demo).", err)
-      }
-
-      // 2. SCRITTURE VERTICALI OPZIONALI E NON BLOCCANTI
+      // 2. SCRITTURE VERTICALI SU TABELLE SPECIFICHE (CON TRY/CATCH E SOLO COLONNE ESISTENTI REALMENTE)
       if (role === 'worker') {
         try {
+          // Nota: worker_profiles è assente in Staging al momento, ma proviamo l'upsert protetto da try-catch.
           await supabase.from('worker_profiles').upsert({
             id: userId,
             first_name: firstName,
@@ -180,20 +143,21 @@ export default function OnboardingPage() {
             skills: [primaryRole, ...secondaryRoles].filter(Boolean),
             experience_years: parseInt(experience, 10) || 0,
           })
-        } catch (err) {}
+        } catch (err) {
+          console.warn("Scrittura su worker_profiles fallita (Tabella assente in Staging).", err)
+        }
       } else {
         try {
+          // restaurant_profiles esiste in Staging ma ha solo: id, restaurant_name, city.
+          // Non inseriamo company_name, vat_number, phone, address o description poiché inesistenti in Staging.
           await supabase.from('restaurant_profiles').upsert({
             id: userId,
             restaurant_name: businessName,
-            company_name: companyName,
-            vat_number: vatNumber,
-            phone: phone,
-            address: address,
             city: city,
-            description: bio,
           })
-        } catch (err) {}
+        } catch (err) {
+          console.warn("Scrittura su restaurant_profiles fallita.", err)
+        }
       }
 
       setSuccessMsg("Profilo completato! Preparo la dashboard...")

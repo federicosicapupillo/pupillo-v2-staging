@@ -80,16 +80,6 @@ export default function AdminDashboardPage() {
     
     if (roleData && roleData.role === 'admin') {
       isAdmin = true
-    } else {
-      // Fallback
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('primary_role')
-        .eq('id', user.id)
-        .maybeSingle()
-      if (profileData && profileData.primary_role === 'admin') {
-        isAdmin = true
-      }
     }
 
     if (!isAdmin) {

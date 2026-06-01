@@ -20,16 +20,6 @@ export default function ForbiddenPage() {
 
         if (userRoleRow) {
           setRole(userRoleRow.role)
-        } else {
-          // Fallback to profiles
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('role')
-            .eq('id', user.id)
-            .maybeSingle()
-          if (profile) {
-            setRole(profile.role)
-          }
         }
       }
     }

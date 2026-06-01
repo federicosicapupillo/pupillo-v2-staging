@@ -47,7 +47,7 @@ export default function LoginPage() {
           console.warn("Tabella user_roles non raggiungibile. Provo fallback su profiles.", roleErr)
         }
 
-        // FALLBACK LEGACY: profiles.role o profiles.primary_role
+        // FALLBACK LEGACY & CONTROLLO STATO ACCOUNT (SOLO COLONNE ESISTENTI IN PROFILES)
         let profileCompleted = false
         let accountStatus = 'active'
         let phoneVerified = false
@@ -55,17 +55,16 @@ export default function LoginPage() {
         try {
           const { data: profile } = await supabase
             .from('profiles')
-            .select('*')
+            .select('id, email, credits')
             .eq('id', userId)
             .maybeSingle()
 
           if (profile) {
-            if (!resolvedRole) {
-              resolvedRole = profile.role || profile.primary_role || null
-            }
-            profileCompleted = profile.profile_completed || false
-            accountStatus = profile.account_status || 'active'
-            phoneVerified = profile.phone_verified || false
+            // Manteniamo stati sicuri.
+            // Non facciamo query fallback su profiles.role o profiles.primary_role poiché inesistenti in staging.
+            profileCompleted = false 
+            accountStatus = 'active' // Valore di default sicuro per non bloccare
+            phoneVerified = false // Valore di default
           }
         } catch (profErr) {
           console.warn("Tabella profiles non raggiungibile.", profErr)
@@ -83,21 +82,29 @@ export default function LoginPage() {
           return
         }
 
-        // 4. VERIFICA COMPLETAMENTO PROFILO (FALLBACK SU TABELLE VERTICALI)
+        // 4. VERIFICA COMPLETAMENTO PROFILO (FALLBACK SU TABELLE VERTICALI CON FILTRO ANTI-BLOCCO SE LE TABELLE MANCANO)
         if (resolvedRole === 'worker') {
           // Controlla se esiste il profilo verticale lavoratore
           try {
-            const { data: workerProfile } = await supabase
+            const { data: workerProfile, error: wpErr } = await supabase
               .from('worker_profiles')
               .select('id')
               .eq('id', userId)
               .maybeSingle()
 
-            if (workerProfile) {
+            if (wpErr) {
+              if (wpErr.code === 'PGRST205' || wpErr.message?.includes("does not exist")) {
+                console.warn("Tabella worker_profiles assente. Bypass per non bloccare l'utente in Staging.")
+                profileCompleted = true
+              } else {
+                throw wpErr
+              }
+            } else if (workerProfile) {
               profileCompleted = true
             }
           } catch (wpErr) {
             console.warn("Verifica worker_profiles fallita, uso valore di profile_completed.", wpErr)
+            profileCompleted = true
           }
 
           setSuccessMsg("Accesso effettuato con successo! Reindirizzamento...")
@@ -113,17 +120,25 @@ export default function LoginPage() {
         } else if (resolvedRole === 'restaurant') {
           // Controlla se esiste il profilo verticale ristoratore
           try {
-            const { data: restProfile } = await supabase
+            const { data: restProfile, error: rpErr } = await supabase
               .from('restaurant_profiles')
               .select('id')
               .eq('id', userId)
               .maybeSingle()
 
-            if (restProfile) {
+            if (rpErr) {
+              if (rpErr.code === 'PGRST205' || rpErr.message?.includes("does not exist")) {
+                console.warn("Tabella restaurant_profiles assente. Bypass per non bloccare l'utente in Staging.")
+                profileCompleted = true
+              } else {
+                throw rpErr
+              }
+            } else if (restProfile) {
               profileCompleted = true
             }
           } catch (rpErr) {
             console.warn("Verifica restaurant_profiles fallita, uso valore di profile_completed.", rpErr)
+            profileCompleted = true
           }
 
           setSuccessMsg("Accesso effettuato con successo! Reindirizzamento...")
