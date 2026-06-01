@@ -40,6 +40,9 @@ legacy_reference/
 backups/
 *.dump
 *.sql
+!supabase/
+!supabase/migrations/
+!supabase/migrations/*.sql
 *.zip
 *.tar
 *.tar.gz
