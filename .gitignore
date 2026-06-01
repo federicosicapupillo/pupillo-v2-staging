@@ -34,3 +34,12 @@ __pycache__/
 .venv/
 env/
 venv/
+
+# Legacy reference and backups
+legacy_reference/
+backups/
+*.dump
+*.sql
+*.zip
+*.tar
+*.tar.gz
