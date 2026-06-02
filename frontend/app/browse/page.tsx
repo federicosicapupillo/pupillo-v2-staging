@@ -101,7 +101,7 @@ export default function BrowseJobsPage() {
       setJobs(jobsData || [])
     } catch (err: any) {
       console.error(err)
-      setErrorMsg("Connessione Supabase assente. Visualizzazione dati in modalità demo locale.")
+      setErrorMsg("Connessione Supabase assente. Dati in modalità demo locale.")
       
       // Fallback Dati Demo Premium
       const demoShifts: JobShift[] = [
@@ -158,7 +158,6 @@ export default function BrowseJobsPage() {
 
   const handleApply = async (jobId: string) => {
     if (!user) {
-      // Se non autenticato, rimanda a registrazione/login
       window.location.href = '/login'
       return
     }
@@ -200,202 +199,709 @@ export default function BrowseJobsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans antialiased">
-      {/* Header / Navbar */}
-      <header className="sticky top-0 z-50 backdrop-blur-md bg-slate-950/80 border-b border-slate-800/60 px-6 py-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className="text-xl">🏃‍♂️</span>
-            <span 
-              onClick={() => window.location.href = '/'}
-              className="text-xl font-black tracking-tight bg-gradient-to-r from-teal-400 to-emerald-300 bg-clip-text text-transparent cursor-pointer"
-            >
-              PUPILLO BACHECA
-            </span>
-          </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => window.location.href = '/mappa'}
-              className="px-4 py-2 text-xs font-bold rounded-xl border border-slate-800 hover:bg-slate-900 transition-all flex items-center gap-1"
-            >
-              🗺️ Vista Mappa
-            </button>
-            <button
-              onClick={() => window.location.href = user ? '/dashboard/worker' : '/login'}
-              className="px-4 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-teal-500 to-emerald-500 text-slate-950 transition-all"
-            >
-              {user ? 'La Mia Dashboard' : 'Accedi'}
-            </button>
-          </div>
-        </div>
-      </header>
+    <>
+      <style>{`
+        /* Self-contained styling for browse page */
+        html, body {
+          background-color: #000000 !important;
+          color: #ffffff !important;
+          margin: 0;
+          padding: 0;
+          font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+          box-sizing: border-box;
+          scroll-behavior: smooth;
+        }
 
-      {/* Main Area */}
-      <main className="max-w-7xl mx-auto px-6 py-12 space-y-10">
-        <section className="space-y-4">
-          <h1 className="text-3xl font-black tracking-tight text-slate-50">
-            Trova il tuo prossimo <span className="bg-gradient-to-r from-teal-400 to-emerald-300 bg-clip-text text-transparent">Turno Extra</span>
-          </h1>
-          <p className="text-slate-400 text-sm max-w-2xl">
-            Filtra gli annunci attivi vicino a te per ruolo, compenso o città, e candidati con un solo click. Riceverai risposta immediata dal ristorante.
-          </p>
-        </section>
+        *, *::before, *::after {
+          box-sizing: inherit;
+        }
 
-        {/* Banner Alert Fallback */}
-        {errorMsg && (
-          <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-400 text-center">
-            ⚠️ {errorMsg}
-          </div>
-        )}
-        {successMsg && (
-          <div className="p-4 rounded-2xl bg-teal-500/10 border border-teal-500/20 text-xs text-teal-300 text-center">
-            🎉 {successMsg}
-          </div>
-        )}
+        .browse-wrapper {
+          min-height: 100vh;
+          background-color: #000000;
+          color: #ffffff;
+          padding-bottom: 4rem;
+        }
 
-        {/* Filtri */}
-        <section className="p-6 rounded-3xl bg-slate-900 border border-slate-800 shadow-lg grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-400">Ruolo / Mansione</label>
-            <select
-              value={selectedRole}
-              onChange={(e) => setSelectedRole(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-sm outline-none text-slate-200 focus:border-teal-500"
-            >
-              <option value="">Tutti i ruoli</option>
-              {rolesList.map(role => (
-                <option key={role} value={role}>{role}</option>
-              ))}
-            </select>
-          </div>
+        /* Header / Navbar */
+        .brand-header {
+          position: sticky;
+          top: 0;
+          z-index: 50;
+          background-color: #000000;
+          border-bottom: 6px solid #ffffff;
+          padding: 1rem 1.5rem;
+        }
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-400">Tariffa Minima (€/ora)</label>
-            <input
-              type="number"
-              value={minRate}
-              onChange={(e) => setMinRate(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-sm outline-none text-slate-200 placeholder-slate-600 focus:border-teal-500"
-              placeholder="es. 12"
-              min="0"
-            />
-          </div>
+        .header-container {
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
+          align-items: center;
+          justify-content: space-between;
+          max-width: 80rem;
+          margin: 0 auto;
+        }
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-400">Cerca per Città / Indirizzo</label>
-            <input
-              type="text"
-              value={searchCity}
-              onChange={(e) => setSearchCity(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-sm outline-none text-slate-200 placeholder-slate-600 focus:border-teal-500"
-              placeholder="es. Milano"
-            />
-          </div>
-        </section>
+        @media (min-width: 640px) {
+          .header-container {
+            flex-direction: row;
+          }
+        }
 
-        {/* Lista Risultati */}
-        <section className="space-y-6">
-          <div className="flex justify-between items-center">
-            <h2 className="text-lg font-bold text-slate-100">
-              Annunci Attivi ({filteredJobs.length})
-            </h2>
-            {(selectedRole || minRate || searchCity) && (
+        .logo-nav {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          text-decoration: none;
+        }
+
+        .text-logo-small {
+          font-size: 1.25rem;
+          font-weight: 900;
+          letter-spacing: -0.05em;
+          text-transform: uppercase;
+          color: #eab308;
+          background-color: #000000;
+          border: 3px solid #ffffff;
+          padding: 0.2rem 0.75rem;
+          border-radius: 10px;
+          box-shadow: 3px 3px 0px #7c3aed;
+          display: inline-block;
+          user-select: none;
+          text-decoration: none;
+          cursor: pointer;
+        }
+
+        .btn-header-group {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+        }
+
+        /* Action Buttons */
+        .pupillo-btn-header {
+          padding: 0.5rem 1rem;
+          font-size: 0.7rem;
+          font-weight: 900;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          border-radius: 10px;
+          border: 2px solid #ffffff;
+          text-decoration: none;
+          cursor: pointer;
+          transition: all 0.1s ease;
+          display: inline-block;
+        }
+
+        .btn-header-black {
+          background-color: #000000;
+          color: #ffffff;
+          box-shadow: 2px 2px 0px #ffffff;
+        }
+
+        .btn-header-black:hover {
+          transform: translate(-1px, -1px);
+          box-shadow: 3px 3px 0px #ffffff;
+        }
+
+        .btn-header-yellow {
+          background-color: #eab308;
+          color: #000000;
+          box-shadow: 2px 2px 0px #7c3aed;
+        }
+
+        .btn-header-yellow:hover {
+          transform: translate(-1px, -1px);
+          box-shadow: 3px 3px 0px #7c3aed;
+        }
+
+        /* Main Content */
+        .main-container {
+          max-width: 80rem;
+          margin: 0 auto;
+          padding: 3rem 1.5rem;
+        }
+
+        .intro-section {
+          margin-bottom: 2.5rem;
+        }
+
+        .intro-title {
+          font-size: 1.75rem;
+          font-weight: 900;
+          text-transform: uppercase;
+          margin: 0 0 0.5rem 0;
+          letter-spacing: -0.01em;
+        }
+
+        @media (min-width: 768px) {
+          .intro-title {
+            font-size: 2.5rem;
+          }
+        }
+
+        .title-accent {
+          color: #eab308;
+          text-shadow: 2px 2px 0px #7c3aed;
+        }
+
+        .intro-desc {
+          font-size: 0.85rem;
+          font-weight: bold;
+          color: #cbd5e1;
+          margin: 0;
+          max-width: 40rem;
+          line-height: 1.6;
+        }
+
+        /* Filter Panel */
+        .pupillo-card-purple {
+          background-color: #09090b;
+          border: 6px solid #ffffff;
+          box-shadow: 8px 8px 0px #7c3aed;
+          border-radius: 32px;
+          padding: 2rem;
+          margin-bottom: 3rem;
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 1.5rem;
+        }
+
+        @media (min-width: 768px) {
+          .pupillo-card-purple {
+            grid-template-columns: repeat(3, 1fr);
+          }
+        }
+
+        .filter-group {
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
+        }
+
+        .filter-label {
+          font-size: 0.65rem;
+          font-weight: 900;
+          text-transform: uppercase;
+          color: #94a3b8;
+          letter-spacing: 0.05em;
+        }
+
+        .pupillo-input {
+          width: 100%;
+          padding: 0.75rem 1.25rem;
+          border-radius: 16px;
+          background-color: #000000;
+          border: 4px solid #1f2937;
+          color: #ffffff;
+          font-size: 0.875rem;
+          font-weight: bold;
+          outline: none;
+          transition: border-color 0.2s;
+          box-sizing: border-box;
+        }
+
+        .pupillo-input:focus {
+          border-color: #eab308;
+        }
+
+        select.pupillo-input {
+          cursor: pointer;
+        }
+
+        /* Results area */
+        .results-header-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 2rem;
+        }
+
+        .results-title {
+          font-size: 1.25rem;
+          font-weight: 900;
+          text-transform: uppercase;
+          color: #eab308;
+          margin: 0;
+          letter-spacing: 0.05em;
+        }
+
+        .reset-filter-btn {
+          background-color: #000000;
+          border: 2px solid #ffffff;
+          color: #ffffff;
+          font-weight: 900;
+          text-transform: uppercase;
+          font-size: 0.65rem;
+          padding: 0.4rem 0.8rem;
+          border-radius: 8px;
+          cursor: pointer;
+          box-shadow: 2px 2px 0px #ffffff;
+          transition: all 0.1s ease;
+        }
+
+        .reset-filter-btn:hover {
+          transform: translate(-1px, -1px);
+          box-shadow: 3px 3px 0px #ffffff;
+        }
+
+        /* Loader */
+        .loader-box {
+          padding: 5rem 0;
+          text-align: center;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 1rem;
+        }
+
+        .spinner {
+          width: 3rem;
+          height: 3rem;
+          border: 4px solid #ffffff;
+          border-top-color: #eab308;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+        }
+
+        .loader-text {
+          font-size: 0.75rem;
+          font-weight: 900;
+          text-transform: uppercase;
+          color: #eab308;
+          letter-spacing: 0.05em;
+        }
+
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+
+        .empty-box {
+          padding: 4rem 1.5rem;
+          text-align: center;
+          background-color: #09090b;
+          border: 4px dashed #ffffff;
+          border-radius: 24px;
+          font-size: 0.875rem;
+          font-weight: 900;
+          color: #64748b;
+          text-transform: uppercase;
+          box-shadow: 6px 6px 0px #7c3aed;
+        }
+
+        /* Cards Grid */
+        .cards-grid {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 2rem;
+        }
+
+        @media (min-width: 640px) {
+          .cards-grid {
+            grid-template-columns: repeat(2, 1fr);
+          }
+        }
+
+        @media (min-width: 1024px) {
+          .cards-grid {
+            grid-template-columns: repeat(3, 1fr);
+          }
+        }
+
+        /* Neobrutalist Card shifts */
+        .pupillo-card-shift {
+          background-color: #09090b;
+          border: 4px solid #ffffff;
+          border-radius: 32px;
+          padding: 1.5rem;
+          box-shadow: 6px 6px 0px #ffffff;
+          transition: transform 0.2s ease, box-shadow 0.2s ease;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          height: 100%;
+          box-sizing: border-box;
+        }
+
+        .pupillo-card-shift:hover {
+          transform: scale(1.01);
+          box-shadow: 8px 8px 0px #ffffff;
+        }
+
+        .card-header-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 0.5rem;
+          margin-bottom: 1rem;
+        }
+
+        .pupillo-badge-yellow {
+          padding: 0.3rem 0.6rem;
+          font-size: 0.6rem;
+          font-weight: 900;
+          border-radius: 8px;
+          background-color: #eab308;
+          border: 2px solid #ffffff;
+          color: #000000;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          box-shadow: 2px 2px 0px #7c3aed;
+          display: inline-block;
+        }
+
+        .shift-rate {
+          font-size: 0.85rem;
+          font-weight: 900;
+          color: #eab308;
+          background-color: #000000;
+          padding: 0.2rem 0.5rem;
+          border-radius: 8px;
+          border: 2px solid #ffffff;
+          transform: rotate(2deg);
+          box-shadow: 2px 2px 0px #ffffff;
+        }
+
+        .shift-title {
+          font-size: 1.15rem;
+          font-weight: 900;
+          text-transform: uppercase;
+          margin: 0;
+          color: #ffffff;
+        }
+
+        .shift-location {
+          font-size: 0.65rem;
+          color: #9ca3af;
+          font-weight: bold;
+          margin-top: 0.25rem;
+        }
+
+        /* Logbox info */
+        .shift-info-box {
+          margin-top: 1rem;
+          padding: 1rem;
+          border-radius: 12px;
+          background-color: #000000;
+          border: 2px solid #ffffff;
+          font-size: 0.7rem;
+          font-weight: bold;
+          color: #ffffff;
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
+          box-shadow: 3px 3px 0px #ffffff;
+        }
+
+        .info-row {
+          display: flex;
+          justify-content: space-between;
+        }
+
+        .info-label {
+          color: #64748b;
+        }
+
+        .info-value {
+          color: #eab308;
+        }
+
+        .shift-notes {
+          font-size: 0.65rem;
+          color: #94a3b8;
+          font-style: italic;
+          margin-top: 1rem;
+          border-left: 2px solid #eab308;
+          padding-left: 0.5rem;
+          line-height: 1.4;
+        }
+
+        /* Actions row */
+        .card-actions {
+          margin-top: 1.5rem;
+          padding-top: 1rem;
+          border-top: 2px solid rgba(255,255,255,0.1);
+          display: flex;
+          gap: 0.5rem;
+        }
+
+        .card-btn-black {
+          flex: 1;
+          padding: 0.65rem;
+          background-color: #000000;
+          color: #ffffff;
+          border: 2px solid #ffffff;
+          font-weight: 900;
+          text-transform: uppercase;
+          font-size: 0.7rem;
+          border-radius: 10px;
+          cursor: pointer;
+          box-shadow: 2px 2px 0px #fff;
+          transition: all 0.1s ease;
+          text-align: center;
+          text-decoration: none;
+        }
+
+        .card-btn-black:hover {
+          transform: translate(-1px, -1px);
+          box-shadow: 3px 3px 0px #fff;
+        }
+
+        .card-btn-yellow {
+          flex: 1;
+          padding: 0.65rem;
+          background-color: #eab308;
+          color: #000000;
+          border: 2px solid #ffffff;
+          font-weight: 900;
+          text-transform: uppercase;
+          font-size: 0.7rem;
+          border-radius: 10px;
+          cursor: pointer;
+          box-shadow: 2px 2px 0px #7c3aed;
+          transition: all 0.1s ease;
+          text-align: center;
+          text-decoration: none;
+        }
+
+        .card-btn-yellow:hover {
+          transform: translate(-1px, -1px);
+          box-shadow: 3px 3px 0px #7c3aed;
+        }
+
+        .card-btn-disabled {
+          flex: 1;
+          padding: 0.65rem;
+          background-color: #1f2937;
+          color: #64748b;
+          border: 2px solid #374151;
+          font-weight: 900;
+          text-transform: uppercase;
+          font-size: 0.7rem;
+          border-radius: 10px;
+          text-align: center;
+          pointer-events: none;
+          box-shadow: none;
+        }
+
+        /* Notifications card styling */
+        .alert-card {
+          padding: 1rem;
+          border-radius: 16px;
+          border: 4px solid #ffffff;
+          font-size: 0.75rem;
+          font-weight: 900;
+          text-transform: uppercase;
+          text-align: center;
+          margin-bottom: 1.5rem;
+        }
+
+        .alert-error {
+          background-color: #e11d48;
+          color: #ffffff;
+          box-shadow: 4px 4px 0px #be123c;
+        }
+
+        .alert-success {
+          background-color: #7c3aed;
+          color: #ffffff;
+          box-shadow: 4px 4px 0px #6d28d9;
+        }
+
+      `}</style>
+
+      <div className="browse-wrapper">
+        
+        {/* Header / Navbar */}
+        <header className="brand-header">
+          <div className="header-container">
+            <div className="logo-nav" onClick={() => window.location.href = '/'}>
+              <span className="text-logo-small">PUPILLO</span>
+            </div>
+
+            <div className="btn-header-group">
               <button
-                onClick={() => {
-                  setSelectedRole('')
-                  setMinRate('')
-                  setSearchCity('')
-                }}
-                className="text-xs text-teal-400 hover:underline"
+                onClick={() => window.location.href = '/mappa'}
+                className="pupillo-btn-header btn-header-black"
               >
-                Resetta Filtri
+                🗺️ Vista Mappa
               </button>
-            )}
+              <button
+                onClick={() => window.location.href = user ? (user.user_metadata?.role === 'restaurant' ? '/dashboard/restaurant' : '/dashboard/worker') : '/login'}
+                className="pupillo-btn-header btn-header-yellow"
+              >
+                {user ? 'La Mia Dashboard' : 'Accedi'}
+              </button>
+            </div>
           </div>
+        </header>
 
-          {loading ? (
-            <div className="py-20 text-center flex flex-col items-center gap-3">
-              <div className="w-8 h-8 border-4 border-t-teal-400 border-slate-800 rounded-full animate-spin" />
-              <span className="text-xs text-slate-400">Ricerca dei turni in corso...</span>
-            </div>
-          ) : filteredJobs.length === 0 ? (
-            <div className="py-16 rounded-3xl bg-slate-900 border border-slate-800 border-dashed text-center text-sm text-slate-500">
-              Nessun turno extra corrisponde ai filtri impostati. Riprova con parametri diversi!
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredJobs.map((job) => {
-                const hasApplied = appliedJobIds.has(job.id)
-                return (
-                  <div 
-                    key={job.id} 
-                    className="p-6 rounded-3xl bg-slate-900 border border-slate-800 hover:border-slate-700/80 transition-all flex flex-col justify-between group shadow-lg"
-                  >
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <span className="px-3 py-1 text-xs font-bold rounded-xl bg-teal-500/10 text-teal-300 border border-teal-500/20">
-                          {job.role}
-                        </span>
-                        <span className="text-lg font-black text-emerald-400">
-                          {job.hourly_rate.toFixed(2)} €/h
-                        </span>
-                      </div>
-                      
-                      <div>
-                        <h3 className="text-base font-bold text-slate-100 group-hover:text-teal-400 transition-colors">
-                          {job.restaurant_profiles?.restaurant_name || 'Ristorante Extra'}
-                        </h3>
-                        <p className="text-xs text-slate-400 mt-1">📍 {job.location}</p>
-                      </div>
+        {/* Main Section */}
+        <main className="main-container">
+          
+          <section className="intro-section">
+            <h1 className="intro-title">
+              Trova il tuo prossimo <span className="title-accent">Turno Extra</span> 🍕
+            </h1>
+            <p className="intro-desc">
+              Filtra gli annunci attivi vicino a te per ruolo, compenso o città, e candidati con un solo click. Riceverai risposta immediata dal ristorante.
+            </p>
+          </section>
 
-                      <div className="p-3.5 rounded-2xl bg-slate-950/60 border border-slate-850 text-xs text-slate-300 space-y-1">
-                        <div className="flex justify-between">
-                          <span className="text-slate-500">Data Turno:</span>
-                          <span className="font-semibold">{job.date}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-slate-500">Orario Turno:</span>
-                          <span className="font-semibold">{job.start_time} - {job.end_time}</span>
-                        </div>
-                      </div>
-
-                      {job.notes && (
-                        <p className="text-[11px] text-slate-500 italic leading-snug">
-                          Note: "{job.notes}"
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="mt-6 pt-4 border-t border-slate-800/60 flex items-center gap-2">
-                      <button
-                        onClick={() => window.location.href = `/announcements/${job.id}`}
-                        className="flex-1 py-2.5 text-center text-xs font-bold rounded-xl border border-slate-800 hover:bg-slate-800 transition-all text-slate-300"
-                      >
-                        Vedi Dettagli
-                      </button>
-                      <button
-                        onClick={() => handleApply(job.id)}
-                        disabled={actionLoading === job.id || hasApplied}
-                        className={`flex-1 py-2.5 text-center text-xs font-bold rounded-xl transition-all shadow-md active:scale-95 ${
-                          hasApplied
-                            ? 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 pointer-events-none'
-                            : 'bg-teal-400 hover:bg-teal-300 text-slate-950'
-                        }`}
-                      >
-                        {actionLoading === job.id 
-                          ? 'Candidatura...' 
-                          : hasApplied 
-                          ? 'Candidato ✓' 
-                          : 'Candidati Ora'}
-                      </button>
-                    </div>
-                  </div>
-                )
-              })}
+          {/* Messages */}
+          {errorMsg && (
+            <div className="alert-card alert-error">
+              <span>⚠️</span> {errorMsg}
             </div>
           )}
-        </section>
-      </main>
-    </div>
+          {successMsg && (
+            <div className="alert-card alert-success">
+              <span>🎉</span> {successMsg}
+            </div>
+          )}
+
+          {/* Filtri Panel */}
+          <section className="pupillo-card-purple">
+            <div className="filter-group">
+              <label className="filter-label">Ruolo / Mansione</label>
+              <select
+                value={selectedRole}
+                onChange={(e) => setSelectedRole(e.target.value)}
+                className="pupillo-input"
+              >
+                <option value="" className="bg-black">Tutti i ruoli</option>
+                {rolesList.map(r => (
+                  <option key={r} value={r} className="bg-black">{r}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="filter-group">
+              <label className="filter-label">Tariffa Minima (€/ora)</label>
+              <input
+                type="number"
+                value={minRate}
+                onChange={(e) => setMinRate(e.target.value)}
+                className="pupillo-input"
+                placeholder="es. 12"
+                min="0"
+              />
+            </div>
+
+            <div className="filter-group">
+              <label className="filter-label">Cerca per Città / Indirizzo</label>
+              <input
+                type="text"
+                value={searchCity}
+                onChange={(e) => setSearchCity(e.target.value)}
+                className="pupillo-input"
+                placeholder="es. Milano"
+              />
+            </div>
+          </section>
+
+          {/* Results list */}
+          <section>
+            <div className="results-header-row">
+              <h2 className="results-title">
+                Annunci Attivi ({filteredJobs.length})
+              </h2>
+              {(selectedRole || minRate || searchCity) && (
+                <button
+                  onClick={() => {
+                    setSelectedRole('')
+                    setMinRate('')
+                    setSearchCity('')
+                  }}
+                  className="reset-filter-btn"
+                >
+                  Resetta Filtri
+                </button>
+              )}
+            </div>
+
+            {loading ? (
+              <div className="loader-box">
+                <div className="spinner" />
+                <span className="loader-text">Ricerca turni in corso...</span>
+              </div>
+            ) : filteredJobs.length === 0 ? (
+              <div className="empty-box">
+                Nessun turno extra corrisponde ai filtri impostati. Riprova con parametri diversi!
+              </div>
+            ) : (
+              <div className="cards-grid">
+                {filteredJobs.map((job) => {
+                  const hasApplied = appliedJobIds.has(job.id)
+                  return (
+                    <div 
+                      key={job.id} 
+                      className="pupillo-card-shift"
+                    >
+                      <div>
+                        <div className="card-header-row">
+                          <span className="pupillo-badge-yellow">
+                            {job.role}
+                          </span>
+                          <span className="shift-rate">
+                            {job.hourly_rate.toFixed(2)} €/h
+                          </span>
+                        </div>
+                        
+                        <div>
+                          <h3 className="shift-title">
+                            {job.restaurant_profiles?.restaurant_name || 'Ristorante Extra'}
+                          </h3>
+                          <div className="shift-location">📍 {job.location}</div>
+                        </div>
+
+                        <div className="shift-info-box">
+                          <div className="info-row">
+                            <span className="info-label">DATA TURNO:</span>
+                            <span className="info-value">{job.date}</span>
+                          </div>
+                          <div className="info-row">
+                            <span className="info-label">ORARIO TURNO:</span>
+                            <span>{job.start_time.substring(0, 5)} - {job.end_time.substring(0, 5)}</span>
+                          </div>
+                        </div>
+
+                        {job.notes && (
+                          <p className="shift-notes">
+                            Note: "{job.notes}"
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="card-actions">
+                        <button
+                          onClick={() => window.location.href = `/announcements/${job.id}`}
+                          className="card-btn-black"
+                        >
+                          Dettagli
+                        </button>
+                        <button
+                          onClick={() => handleApply(job.id)}
+                          disabled={actionLoading === job.id || hasApplied}
+                          className={hasApplied ? "card-btn-disabled" : "card-btn-yellow"}
+                        >
+                          {actionLoading === job.id 
+                            ? '...' 
+                            : hasApplied 
+                            ? 'Candidato ✓' 
+                            : 'Candidati'}
+                        </button>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </section>
+
+        </main>
+      </div>
+    </>
   )
 }

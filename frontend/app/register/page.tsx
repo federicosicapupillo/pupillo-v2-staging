@@ -48,7 +48,7 @@ export default function RegisterPage() {
         throw new Error("Errore nella creazione dell'account.")
       }
 
-      setSuccessMsg("Registrazione completata con successo! Reindirizzamento all'onboarding...")
+      setSuccessMsg("Registrazione completata con successo! Reindirizzamento...")
       
       setTimeout(() => {
         window.location.href = '/onboarding'
@@ -57,7 +57,7 @@ export default function RegisterPage() {
     } catch (err: any) {
       console.error(err)
       
-      // Fallback Demo Locale Separato
+      // Fallback Demo Locale
       if (email.toLowerCase().includes('lavoratore') || email.toLowerCase().includes('ristoratore')) {
         setSuccessMsg("Registrazione demo locale avvenuta (Demo mode)!")
         setTimeout(() => {
@@ -72,151 +72,421 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col justify-center items-center px-4 py-12 font-sans antialiased relative overflow-hidden">
-      
-      {/* Cartoon Graphic Element: Decorative Background Elements */}
-      <div className="absolute top-10 left-10 text-yellow-400/10 text-9xl font-black select-none pointer-events-none select-none rotate-12">★</div>
-      <div className="absolute bottom-10 right-10 text-violet-600/10 text-9xl font-black select-none pointer-events-none select-none -rotate-12">★</div>
+    <>
+      <style>{`
+        /* Self-contained styling for register page */
+        html, body {
+          background-color: #000000 !important;
+          color: #ffffff !important;
+          margin: 0;
+          padding: 0;
+          font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+          box-sizing: border-box;
+        }
 
-      {/* Main Playful Card */}
-      <div className="w-full max-w-md p-8 md:p-10 rounded-[38px] bg-zinc-950 border-[6px] border-white shadow-[12px_12px_0px_#7c3aed] space-y-8 relative z-10 transition-transform duration-300 hover:scale-[1.01]">
-        
-        {/* Brand Logo in HTML/Tailwind */}
-        <div className="text-center">
-          <div className="relative inline-block cursor-pointer select-none group" onClick={() => window.location.href = '/'}>
-            {/* Mascot Chef Hat bouncing on top */}
-            <div className="absolute -top-7 left-[72px] text-3xl transform -rotate-12 group-hover:scale-110 group-hover:rotate-12 transition-all duration-300">
-              👩‍🍳
-            </div>
-            {/* Impact Lines / Slashes next to O */}
-            <div className="absolute -top-1 -right-6 text-yellow-400 text-3xl font-black select-none leading-none rotate-12 opacity-80 group-hover:scale-110 group-hover:rotate-45 transition-all duration-300">
-              ⚡
-            </div>
+        *, *::before, *::after {
+          box-sizing: inherit;
+        }
 
-            <div className="flex items-end tracking-tight">
-              {/* Big Yellow Rounded Cartoon P */}
-              <span className="text-6xl font-black text-yellow-400 rotate-[-8deg] inline-block filter drop-shadow-[3px_3px_0px_#7c3aed] transition-transform group-hover:scale-110 duration-200">
-                P
-              </span>
-              {/* Bold White Cartoon upillo */}
-              <span className="text-5xl font-black text-white ml-1 tracking-tighter uppercase relative">
-                upillo
-              </span>
-            </div>
-            {/* Saturated Purple Arc Underline */}
-            <div className="h-2.5 w-full bg-violet-600 rounded-full mt-1.5 filter drop-shadow-[0_2px_4px_rgba(124,58,237,0.4)] rotate-[-1.5deg]" />
-          </div>
+        .register-wrapper {
+          min-height: 100vh;
+          background-color: #000000;
+          color: #ffffff;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          padding: 3rem 1rem;
+          position: relative;
+          overflow: hidden;
+        }
+
+        .rotate-star {
+          position: absolute;
+          font-weight: 900;
+          font-size: 8rem;
+          color: rgba(234, 179, 8, 0.05);
+          user-select: none;
+          pointer-events: none;
+        }
+
+        .star-left {
+          top: 10%;
+          left: 5%;
+          transform: rotate(15deg);
+        }
+
+        .star-right {
+          bottom: 10%;
+          right: 5%;
+          transform: rotate(-15deg);
+        }
+
+        .pupillo-card-purple {
+          background-color: #09090b;
+          border: 6px solid #ffffff;
+          box-shadow: 8px 8px 0px #7c3aed;
+          border-radius: 32px;
+          padding: 2.5rem;
+          max-width: 26rem;
+          width: 100%;
+          box-sizing: border-box;
+          text-align: center;
+          position: relative;
+          z-index: 10;
+        }
+
+        .text-logo-brand {
+          font-size: 2.5rem;
+          font-weight: 900;
+          letter-spacing: -0.05em;
+          text-transform: uppercase;
+          color: #eab308;
+          background-color: #000000;
+          border: 4px solid #ffffff;
+          padding: 0.25rem 1.25rem;
+          border-radius: 16px;
+          box-shadow: 4px 4px 0px #7c3aed;
+          display: inline-block;
+          margin-bottom: 0.5rem;
+          user-select: none;
+          cursor: pointer;
+        }
+
+        .logo-subtitle {
+          font-size: 0.65rem;
+          color: #94a3b8;
+          font-weight: 900;
+          text-transform: uppercase;
+          letter-spacing: 0.15em;
+          margin-top: 0.5rem;
+          margin-bottom: 2rem;
+        }
+
+        .role-title {
+          font-size: 0.75rem;
+          font-weight: 900;
+          color: #eab308;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          margin-bottom: 1.5rem;
+        }
+
+        /* Role Buttons */
+        .role-grid {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 1.25rem;
+        }
+
+        .role-btn {
+          background-color: #000000;
+          border: 4px solid #1f2937;
+          border-radius: 18px;
+          padding: 1.5rem;
+          color: #ffffff;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 0.5rem;
+          text-align: center;
+        }
+
+        .role-btn:hover {
+          border-color: #eab308;
+          transform: scale(1.02);
+        }
+
+        .role-emoji {
+          font-size: 2.5rem;
+        }
+
+        .role-name-worker {
+          font-weight: 900;
+          font-size: 0.875rem;
+          text-transform: uppercase;
+          color: #eab308;
+        }
+
+        .role-name-rest {
+          font-weight: 900;
+          font-size: 0.875rem;
+          text-transform: uppercase;
+          color: #a78bfa;
+        }
+
+        .role-desc {
+          font-size: 0.65rem;
+          color: #64748b;
+          margin: 0;
+          font-weight: bold;
+          line-height: 1.4;
+        }
+
+        /* Forms inputs */
+        .form-group {
+          margin-bottom: 1.25rem;
+          text-align: left;
+        }
+
+        .pupillo-label {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          font-size: 0.7rem;
+          font-weight: 900;
+          text-transform: uppercase;
+          color: #eab308;
+          letter-spacing: 0.05em;
+          margin-bottom: 0.5rem;
+        }
+
+        .pupillo-input {
+          width: 100%;
+          padding: 0.85rem 1.25rem;
+          border-radius: 16px;
+          background-color: #000000;
+          border: 4px solid #1f2937;
+          color: #ffffff;
+          font-size: 0.875rem;
+          font-weight: bold;
+          outline: none;
+          transition: border-color 0.2s;
+          box-sizing: border-box;
+        }
+
+        .pupillo-input:focus {
+          border-color: #eab308;
+        }
+
+        .pupillo-btn-yellow {
+          width: 100%;
+          background-color: #eab308;
+          color: #000000;
+          border: 4px solid #ffffff;
+          font-weight: 900;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          border-radius: 16px;
+          padding: 1rem 2rem;
+          font-size: 0.875rem;
+          text-align: center;
+          box-shadow: 4px 4px 0px #7c3aed;
+          transition: all 0.1s ease;
+          cursor: pointer;
+          margin-top: 1.5rem;
+          box-sizing: border-box;
+        }
+
+        .pupillo-btn-yellow:hover {
+          background-color: #facc15;
+          transform: translate(-2px, -2px);
+          box-shadow: 6px 6px 0px #7c3aed;
+        }
+
+        .pupillo-btn-yellow:active {
+          transform: translate(2px, 2px);
+          box-shadow: 2px 2px 0px #7c3aed;
+        }
+
+        /* Switch text styling */
+        .switch-prompt {
+          margin-top: 1.5rem;
+          padding-top: 1.25rem;
+          border-top: 4px solid #1f2937;
+          font-size: 0.75rem;
+          color: #94a3b8;
+          font-weight: bold;
+        }
+
+        .switch-link {
+          color: #eab308;
+          text-decoration: underline;
+          font-weight: 900;
+          transition: color 0.2s;
+        }
+
+        .switch-link:hover {
+          color: #facc15;
+        }
+
+        /* Notifications card styling */
+        .alert-card {
+          padding: 1rem;
+          border-radius: 16px;
+          border: 4px solid #ffffff;
+          font-size: 0.75rem;
+          font-weight: 900;
+          text-transform: uppercase;
+          text-align: center;
+          margin-bottom: 1.5rem;
+        }
+
+        .alert-error {
+          background-color: #e11d48;
+          color: #ffffff;
+          box-shadow: 4px 4px 0px #be123c;
+        }
+
+        .alert-success {
+          background-color: #7c3aed;
+          color: #ffffff;
+          box-shadow: 4px 4px 0px #6d28d9;
+        }
+
+        .form-header-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding-bottom: 0.75rem;
+          border-bottom: 4px solid #1f2937;
+          margin-bottom: 1.25rem;
+          font-size: 0.7rem;
+          font-weight: bold;
+          text-transform: uppercase;
+          color: #cbd5e1;
+        }
+
+        .change-role-btn {
+          background: none;
+          border: none;
+          color: #eab308;
+          text-decoration: underline;
+          font-weight: 900;
+          cursor: pointer;
+          font-size: 0.7rem;
+        }
+
+        .role-highlight-worker {
+          color: #eab308;
+          font-weight: 900;
+        }
+
+        .role-highlight-rest {
+          color: #a78bfa;
+          font-weight: 900;
+        }
+
+      `}</style>
+
+      <div className="register-wrapper">
+        <div className="rotate-star star-left">★</div>
+        <div className="rotate-star star-right">★</div>
+
+        <div className="pupillo-card-purple">
           
-          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-4">
-            Extra Staff & Food Jobs
-          </p>
+          <div onClick={() => window.location.href = '/'}>
+            <span className="text-logo-brand">PUPILLO</span>
+          </div>
+          <div className="logo-subtitle">Extra Staff & Food Jobs</div>
+
+          {errorMsg && (
+            <div className="alert-card alert-error">
+              <span>⚠️</span> {errorMsg}
+            </div>
+          )}
+
+          {successMsg && (
+            <div className="alert-card alert-success">
+              <span>🎉</span> {successMsg}
+            </div>
+          )}
+
+          {/* Scelta Ruolo */}
+          {!role ? (
+            <div className="space-y-6">
+              <h2 className="role-title">
+                Seleziona il tuo ruolo per iniziare
+              </h2>
+              <div className="role-grid">
+                <button
+                  onClick={() => setRole('worker')}
+                  className="role-btn"
+                >
+                  <span className="role-emoji">🏃‍♂️</span>
+                  <div>
+                    <h3 className="role-name-worker">Lavoratore Extra</h3>
+                    <p className="role-desc">Cerca turni extra e collaborazioni occasionali flessibili</p>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => setRole('restaurant')}
+                  className="role-btn"
+                >
+                  <span className="role-emoji">🍽️</span>
+                  <div>
+                    <h3 className="role-name-rest">Ristoratore / Gestore</h3>
+                    <p className="role-desc">Pubblica annunci e gestisci personale di supporto</p>
+                  </div>
+                </button>
+              </div>
+              
+              <p className="switch-prompt">
+                Hai già un account?{' '}
+                <a href="/login" className="switch-link">Accedi</a>
+              </p>
+            </div>
+          ) : (
+            /* Form di registrazione baseline credenziali */
+            <form onSubmit={handleRegister}>
+              <div className="form-header-row">
+                <span>
+                  Ruolo choise:{' '}
+                  <span className={role === 'worker' ? 'role-highlight-worker' : 'role-highlight-rest'}>
+                    {role === 'worker' ? 'Lavoratore' : 'Ristoratore'}
+                  </span>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setRole(null)}
+                  className="change-role-btn"
+                >
+                  Cambia
+                </button>
+              </div>
+
+              <div className="form-group">
+                <label className="pupillo-label">
+                  <span>📧</span> Indirizzo Email
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="pupillo-input"
+                  placeholder="nome@esempio.com"
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="pupillo-label">
+                  <span>🔑</span> Password
+                </label>
+                <input
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="pupillo-input"
+                  placeholder="••••••••"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="pupillo-btn-yellow"
+              >
+                {loading ? 'Registrazione...' : "Registrati Ora!"}
+              </button>
+            </form>
+          )}
         </div>
-
-        {errorMsg && (
-          <div className="p-4 rounded-2xl bg-rose-600 border-4 border-white text-xs font-black text-white text-center shadow-[4px_4px_0px_#f43f5e] flex items-center justify-center gap-2">
-            <span>⚠️</span> {errorMsg.toUpperCase()}
-          </div>
-        )}
-        {successMsg && (
-          <div className="p-4 rounded-2xl bg-violet-600 border-4 border-white text-xs font-black text-white text-center shadow-[4px_4px_0px_#7c3aed] flex items-center justify-center gap-2">
-            <span>🎉</span> {successMsg.toUpperCase()}
-          </div>
-        )}
-
-        {/* Scelta Ruolo */}
-        {!role ? (
-          <div className="space-y-6">
-            <h2 className="text-center text-xs font-black text-yellow-400 tracking-wider uppercase">
-              SELEZIONA IL TUO RUOLO PER INIZIARE:
-            </h2>
-            <div className="grid grid-cols-1 gap-4">
-              <button
-                onClick={() => setRole('worker')}
-                className="p-5 rounded-2xl bg-black border-4 border-slate-800 hover:border-yellow-400 focus:border-yellow-400 hover:scale-[1.02] focus:scale-[0.98] transition-all duration-200 flex flex-col items-center justify-center gap-2 text-center group shadow-inner"
-              >
-                <span className="text-4xl group-hover:scale-115 group-hover:rotate-6 transition-all duration-300">🏃‍♂️</span>
-                <div>
-                  <h3 className="font-black text-yellow-400 text-sm">Lavoratore Extra</h3>
-                  <p className="text-[10px] text-slate-500 mt-1 leading-snug">Cerca turni extra e collaborazioni occasionali flessibili</p>
-                </div>
-              </button>
-
-              <button
-                onClick={() => setRole('restaurant')}
-                className="p-5 rounded-2xl bg-black border-4 border-slate-800 hover:border-violet-600 focus:border-violet-600 hover:scale-[1.02] focus:scale-[0.98] transition-all duration-200 flex flex-col items-center justify-center gap-2 text-center group shadow-inner"
-              >
-                <span className="text-4xl group-hover:scale-115 group-hover:-rotate-6 transition-all duration-300">🍽️</span>
-                <div>
-                  <h3 className="font-black text-violet-400 text-sm">Ristoratore / Gestore</h3>
-                  <p className="text-[10px] text-slate-500 mt-1 leading-snug">Pubblica annunci e gestisci personale di supporto</p>
-                </div>
-              </button>
-            </div>
-            
-            <p className="text-center text-xs text-slate-500 pt-4 border-t-4 border-slate-800/60">
-              Hai già un account?{' '}
-              <a href="/login" className="text-yellow-400 hover:text-yellow-355 underline font-black transition-all duration-200">Accedi</a>
-            </p>
-          </div>
-        ) : (
-          /* Form di registrazione baseline credenziali */
-          <form onSubmit={handleRegister} className="space-y-5">
-            <div className="flex justify-between items-center pb-2 border-b-4 border-slate-850">
-              <span className="text-xs font-black text-slate-400 uppercase tracking-wider">
-                Ruolo:{' '}
-                <strong className={role === 'worker' ? 'text-yellow-400' : 'text-violet-400'}>
-                  {role === 'worker' ? 'Lavoratore' : 'Ristoratore'}
-                </strong>
-              </span>
-              <button
-                type="button"
-                onClick={() => setRole(null)}
-                className="text-[11px] text-yellow-400 hover:text-yellow-300 underline font-black transition-all duration-200"
-              >
-                Cambia
-              </button>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-xs font-black text-yellow-400 tracking-wider uppercase flex items-center gap-1.5">
-                <span>📧</span> Indirizzo Email
-              </label>
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3.5 rounded-2xl bg-black border-4 border-slate-800 text-sm font-bold focus:border-yellow-400 outline-none transition-all duration-200 text-slate-200 placeholder:text-slate-700"
-                placeholder="nome@esempio.com"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-xs font-black text-yellow-400 tracking-wider uppercase flex items-center gap-1.5">
-                <span>🔑</span> Password
-              </label>
-              <input
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3.5 rounded-2xl bg-black border-4 border-slate-800 text-sm font-bold focus:border-yellow-400 outline-none transition-all duration-200 text-slate-200 placeholder:text-slate-700"
-                placeholder="••••••••"
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className={`w-full py-4 mt-4 rounded-2xl bg-yellow-400 hover:bg-yellow-300 border-4 border-white text-black font-black text-base shadow-[4px_4px_0px_#7c3aed] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_#7c3aed] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0px_#7c3aed] transition-all duration-100 disabled:opacity-50 disabled:pointer-events-none select-none`}
-            >
-              {loading ? 'REGISTRAZIONE IN CORSO...' : "CONTINUA ALL'ONBOARDING!"}
-            </button>
-          </form>
-        )}
       </div>
-    </div>
+    </>
   )
 }
-
-
